@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Crisis Desktop Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'MS Sans Serif', Tahoma, sans-serif;
+            font-size: 11px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            overflow: hidden;
+            height: 100vh;
+            cursor: default;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Scenario Selection Screen */
+        .scenario-screen {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'MS Sans Serif', Tahoma, sans-serif;
+        }
+
+        .scenario-container {
+            background: #f0f0f0;
+            border: 2px outset #c0c0c0;
+            box-shadow: 4px 4px 8px rgba(0,0,0,0.5);
+            max-width: 700px;
+            width: 90%;
+            padding: 0;
+        }
+
+        .scenario-titlebar {
+            background: linear-gradient(to right, #0054e3 0%, #0054e3 80%, #42a5f5 100%);
+            color: white;
+            padding: 4px 8px;
+            font-weight: bold;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+        }
+
+        .scenario-icon {
+            width: 16px;
+            height: 16px;
+            background: #ff6b6b;
+            margin-right: 6px;
+            border-radius: 2px;
+        }
+
+        .scenario-header {
+            background: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #c0c0c0;
+        }
+
+        .scenario-header h1 {
+            font-size: 18px;
+            color: #000080;
+            margin: 0 0 8px 0;
+            font-weight: bold;
+        }
+
+        .scenario-header p {
+            font-size: 11px;
+            color: #000000;
+            margin: 0;
+        }
+
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2px;
+            padding: 12px;
+            background: #f0f0f0;
+        }
+
+        .scenario-card {
+            background: #f0f0f0;
+            border: 1px outset #c0c0c0;
+            cursor: pointer;
+            padding: 12px;
+            transition: none;
+        }
+
+        .scenario-card:hover {
+            background: #e0e0e0;
+            border: 1px inset #c0c0c0;
+        }
+
+        .scenario-card:active {
+            background: #d0d0d0;
+            border: 1px inset #a0a0a0;
+        }
+
+        .scenario-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .scenario-card-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+            background: #ff6b6b;
+            border: 1px outset #c0c0c0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .scenario-card h3 {
+            color: #000080;
+            font-size: 12px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .scenario-card p {
+            color: #000000;
+            font-size: 11px;
+            line-height: 1.3;
+            margin: 6px 0;
+        }
+
+        .scenario-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px solid #d0d0d0;
+        }
+
+        .difficulty {
+            padding: 2px 6px;
+            border: 1px inset #c0c0c0;
+            background: #f0f0f0;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .difficulty.nightmare {
+            background: #ffcccc;
+            color: #800000;
+        }
+
+        .difficulty.crisis {
+            background: #ffffcc;
+            color: #804000;
+        }
+
+        .difficulty.chaos {
+            background: #ffddff;
+            color: #800080;
+        }
+
+        .personas {
+            color: #000080;
+            font-weight: bold;
+        }
+
+        .scenario-footer {
+            background: #f0f0f0;
+            border-top: 1px solid #c0c0c0;
+            padding: 8px 12px;
+            font-size: 10px;
+            color: #666666;
+            text-align: center;
+        }
+
+        /* Desktop Environment */
+        .desktop {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%);
+        }
+
+        /* Taskbar */
+        .taskbar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, #245dc1 0%, #1e4ba8 50%, #1e4ba8 51%, #14368a 100%);
+            border-top: 1px solid #316ac5;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        .start-button {
+            background: linear-gradient(to bottom, #3d6dcc 0%, #2456b8 50%, #2456b8 51%, #1e4ba8 100%);
+            border: 1px outset #2456b8;
+            color: white;
+            font-weight: bold;
+            padding: 4px 20px;
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
+        .start-button:active {
+            border: 1px inset #2456b8;
+        }
+
+        .taskbar-clock {
+            margin-left: auto;
+            color: white;
+            font-size: 11px;
+            background: inset;
+            border: 1px inset #2456b8;
+            padding: 2px 8px;
+        }
+
+        /* Window Styles */
+        .window {
+            position: absolute;
+            background: #f0f0f0;
+            border: 2px outset #c0c0c0;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            min-width: 300px;
+            min-height: 200px;
+        }
+
+        .window.active {
+            z-index: 1000;
+        }
+
+        .window-titlebar {
+            background: linear-gradient(to right, #0054e3 0%, #0054e3 80%, #42a5f5 100%);
+            color: white;
+            padding: 3px 8px;
+            font-weight: bold;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            cursor: move;
+            user-select: none;
+        }
+
+        .window.inactive .window-titlebar {
+            background: linear-gradient(to right, #7c7c7c 0%, #7c7c7c 80%, #a0a0a0 100%);
+        }
+
+        .window-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 5px;
+            background-size: cover;
+        }
+
+        .email-icon { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAFYSURBVDiNpZM9SwNBEIafgwQSCxsLwcJCG1sLG1sLG0uxsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGwsLGw='); }
+        .slack-icon { background: #4a154b; border-radius: 3px; }
+        .file-icon { background: #ffd700; }
+
+        .window-controls {
+            margin-left: auto;
+            display: flex;
+            gap: 2px;
+        }
+
+        .window-control {
+            width: 16px;
+            height: 14px;
+            background: #c0c0c0;
+            border: 1px outset #c0c0c0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        .window-control:active {
+            border: 1px inset #c0c0c0;
+        }
+
+        .window-menubar {
+            background: #f0f0f0;
+            border-bottom: 1px solid #c0c0c0;
+            padding: 2px 8px;
+            font-size: 11px;
+        }
+
+        .window-content {
+            padding: 8px;
+            background: white;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+
+        /* Email Window Specific */
+        .email-window {
+            width: 450px;
+            height: 600px;
+            top: 50px;
+            left: 50px;
+        }
+
+        .email-list {
+            border: 1px inset #c0c0c0;
+            height: 200px;
+            overflow-y: auto;
+            margin-bottom: 8px;
+        }
+
+        .email-item {
+            padding: 4px 8px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+            display: flex;
+            font-size: 11px;
+        }
+
+        .email-item:hover {
+            background: #e0e0ff;
+        }
+
+        .email-item.unread {
+            font-weight: bold;
+            background: #f0f8ff;
+        }
+
+        .email-item.urgent {
+            background: #ffe0e0;
+            color: #cc0000;
+        }
+
+        .email-from {
+            width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-subject {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-preview {
+            border: 1px inset #c0c0c0;
+            height: 300px;
+            padding: 8px;
+            background: white;
+            overflow-y: auto;
+            font-family: 'Times New Roman', serif;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* Slack Window Specific */
+        .slack-window {
+            width: 400px;
+            height: 350px;
+            top: 350px;
+            right: 50px;
+        }
+
+        .slack-channels {
+            background: #4a154b;
+            color: white;
+            padding: 8px;
+            border-bottom: 1px solid #c0c0c0;
+            font-size: 11px;
+        }
+
+        .slack-messages {
+            height: 200px;
+            overflow-y: auto;
+            padding: 8px;
+            border: 1px inset #c0c0c0;
+            background: white;
+        }
+
+        .slack-message {
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+
+        .slack-user {
+            font-weight: bold;
+            color: #1264a3;
+        }
+
+        .slack-time {
+            color: #999;
+            font-size: 10px;
+            margin-left: 8px;
+        }
+
+        .slack-text {
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        .slack-input {
+            border: 1px inset #c0c0c0;
+            padding: 4px;
+            width: 100%;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        /* File Explorer Window */
+        .explorer-window {
+            width: 500px;
+            height: 400px;
+            top: 50px;
+            right: 50px;
+        }
+
+        .explorer-toolbar {
+            background: #f0f0f0;
+            border-bottom: 1px solid #c0c0c0;
+            padding: 4px 8px;
+            font-size: 11px;
+        }
+
+        .explorer-address {
+            border: 1px inset #c0c0c0;
+            padding: 2px 4px;
+            background: white;
+            margin: 4px 0;
+        }
+
+        .explorer-content {
+            display: flex;
+            height: calc(100% - 120px);
+        }
+
+        .explorer-tree {
+            width: 150px;
+            border-right: 1px solid #c0c0c0;
+            border: 1px inset #c0c0c0;
+            background: white;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .explorer-files {
+            flex: 1;
+            border: 1px inset #c0c0c0;
+            background: white;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 2px 4px;
+            cursor: pointer;
+            margin-bottom: 2px;
+            font-size: 11px;
+        }
+
+        .file-item:hover {
+            background: #e0e0ff;
+        }
+
+        .file-item.urgent {
+            background: #ffe0e0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .file-icon-small {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            background: #ffd700;
+            border: 1px solid #ccc;
+        }
+
+        /* Crisis Timer and Back Button */
+        .crisis-timer {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff0000;
+            color: white;
+            padding: 10px 20px;
+            border: 2px outset #ff4444;
+            font-weight: bold;
+            font-size: 16px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 2000;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #c0c0c0;
+            border: 2px outset #c0c0c0;
+            color: black;
+            padding: 8px 16px;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            font-family: 'MS Sans Serif', Tahoma, sans-serif;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 2001;
+        }
+
+        .back-button:hover {
+            background: #d0d0d0;
+        }
+
+        .back-button:active {
+            border: 2px inset #c0c0c0;
+            background: #b0b0b0;
+        }
+
+        .crisis-timer.warning {
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { background: #ff0000; }
+            51%, 100% { background: #cc0000; }
+        }
+
+        /* Notification Toasts */
+        .notification {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: #ffffcc;
+            border: 2px outset #ffff99;
+            padding: 8px 12px;
+            font-size: 11px;
+            max-width: 250px;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            z-index: 1500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* Window dragging states */
+        .window.dragging {
+            opacity: 0.8;
+            z-index: 1001;
+        }
+
+        /* Scrollbars for early 2000s feel */
+        ::-webkit-scrollbar {
+            width: 16px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #c0c0c0;
+            border: 1px inset #c0c0c0;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #dfdfdf 0%, #c0c0c0 50%, #a0a0a0 100%);
+            border: 1px outset #c0c0c0;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #e0e0e0 0%, #d0d0d0 50%, #b0b0b0 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Scenario Selection Screen -->
+    <div class="scenario-screen" id="scenarioScreen">
+        <div class="scenario-container">
+            <div class="scenario-titlebar">
+                <div class="scenario-icon"></div>
+                <span>Marketing Crisis Simulator v2.1</span>
+            </div>
+            
+            <div class="scenario-header">
+                <h1>🔥 Marketing Nightmare Simulator</h1>
+                <p>Select your crisis scenario - Experience every growth marketer's worst fears</p>
+            </div>
+            
+            <div class="scenario-grid">
+                <div class="scenario-card" onclick="startScenario('dashboard-doomsday')">
+                    <div class="scenario-card-header">
+                        <div class="scenario-card-icon">📊</div>
+                        <h3>Dashboard Doomsday</h3>
+                    </div>
+                    <p>All marketing dashboards are broken 30 minutes before the board meeting. GA4 migration failed and you need conversion metrics NOW.</p>
+                    <div class="scenario-meta">
+                        <span class="difficulty nightmare">Nightmare</span>
+                        <span class="personas">3 Personas</span>
+                    </div>
+                </div>
+
+                <div class="scenario-card" onclick="startScenario('typo-viral')">
+                    <div class="scenario-card-header">
+                        <div class="scenario-card-icon">🔥</div>
+                        <h3>The Typo That Went Viral</h3>
+                    </div>
+                    <p>Your social post has an autocorrect typo and is getting massive engagement for all the wrong reasons. 50K impressions and climbing.</p>
+                    <div class="scenario-meta">
+                        <span class="difficulty crisis">Crisis</span>
+                        <span class="personas">2 Personas</span>
+                    </div>
+                </div>
+
+                <div class="scenario-card" onclick="startScenario('wrong-url')">
+                    <div class="scenario-card-header">
+                        <div class="scenario-card-icon">🔗</div>
+                        <h3>Wrong URL Wednesday</h3>
+                    </div>
+                    <p>Your $50K campaign has been sending traffic to your competitor for 6 hours. The mistake was in campaign setup.</p>
+                    <div class="scenario-meta">
+                        <span class="difficulty nightmare">Nightmare</span>
+                        <span class="personas">3 Personas</span>
+                    </div>
+                </div>
+
+                <div class="scenario-card" onclick="startScenario('budget-bomb')">
+                    <div class="scenario-card-header">
+                        <div class="scenario-card-icon">💣</div>
+                        <h3>Budget Bomb Crisis</h3>
+                    </div>
+                    <p>Your campaign overspent by 300% overnight due to bidding error. Daily budget limits got disabled somehow.</p>
+                    <div class="scenario-meta">
+                        <span class="difficulty chaos">Chaos</span>
+                        <span class="personas">3 Personas</span>
+                    </div>
+                </div>
+
+                <div class="scenario-card" onclick="startScenario('pixel-panic')">
+                    <div class="scenario-card-header">
+                        <div class="scenario-card-icon">📱</div>
+                        <h3>Pixel Panic Emergency</h3>
+                    </div>
+                    <p>Facebook tracking has been broken for 2 weeks and nobody noticed. All attribution data is unreliable.</p>
+                    <div class="scenario-meta">
+                        <span class="difficulty crisis">Crisis</span>
+                        <span class="personas">3 Personas</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scenario-footer">
+                Built for Growth Directors who've lived through these nightmares
+            </div>
+        </div>
+    </div>
+
+    <div class="desktop" id="desktop" style="display: none;">
+        <!-- Back Button -->
+        <button class="back-button" onclick="goBackToScenarios()">← Back to Scenarios</button>
+        
+        <!-- Crisis Timer -->
+        <div class="crisis-timer" id="crisisTimer">
+            🚨 You have 1:00 remaining until being laid off
+        </div>
+
+        <!-- Email Window -->
+        <div class="window email-window active" id="emailWindow">
+            <div class="window-titlebar">
+                <div class="window-icon email-icon"></div>
+                <span>Outlook Express - Inbox (47 unread)</span>
+                <div class="window-controls">
+                    <div class="window-control">_</div>
+                    <div class="window-control">□</div>
+                    <div class="window-control">×</div>
+                </div>
+            </div>
+            <div class="window-menubar">
+                File Edit View Tools Message Help
+            </div>
+            <div class="window-content">
+                <div class="email-list" id="emailList">
+                    <div class="email-item unread urgent">
+                        <div class="email-from">CEO Sarah Chen</div>
+                        <div class="email-subject">URGENT: Board meeting in 30 mins - need numbers NOW</div>
+                    </div>
+                    <div class="email-item unread urgent">
+                        <div class="email-from">CFO Mike Rodriguez</div>
+                        <div class="email-subject">RE: Where are the Q4 conversion metrics???</div>
+                    </div>
+                    <div class="email-item unread">
+                        <div class="email-from">Analytics Team</div>
+                        <div class="email-subject">Dashboard Error - GA4 connection failed</div>
+                    </div>
+                    <div class="email-item unread urgent">
+                        <div class="email-from">Board Assistant</div>
+                        <div class="email-subject">Meeting moved UP - starting in 25 minutes</div>
+                    </div>
+                    <div class="email-item unread">
+                        <div class="email-from">Agency Contact</div>
+                        <div class="email-subject">Attribution data discrepancies - need to discuss</div>
+                    </div>
+                </div>
+                <div class="email-preview" id="emailPreview">
+                    <strong>From:</strong> CEO Sarah Chen &lt;sarah@company.com&gt;<br>
+                    <strong>To:</strong> Marketing Team &lt;marketing@company.com&gt;<br>
+                    <strong>Subject:</strong> URGENT: Board meeting in 30 mins - need numbers NOW<br>
+                    <strong>Sent:</strong> Monday, October 23, 2023 2:47 PM<br><br>
+                    
+                    Team,<br><br>
+                    
+                    The board just moved our meeting UP by 2 hours. They want to see:<br>
+                    - Q4 conversion metrics vs target<br>
+                    - Attribution breakdown by channel<br>
+                    - ROI analysis for last 90 days<br><br>
+                    
+                    I'm getting conflicting numbers from different dashboards. Mike is asking for the "real" data and I don't have answers.<br><br>
+                    
+                    Please tell me you have backup reports somewhere. The dashboard showing 40% drop in conversions better be wrong.<br><br>
+                    
+                    Call me IMMEDIATELY.<br><br>
+                    
+                    Sarah<br>
+                    CEO, MarketingCorp<br>
+                    <span style="color: red;">CONFIDENTIAL - Internal Use Only</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slack Window -->
+        <div class="window slack-window" id="slackWindow">
+            <div class="window-titlebar">
+                <div class="window-icon slack-icon"></div>
+                <span>Slack - #marketing-crisis</span>
+                <div class="window-controls">
+                    <div class="window-control">_</div>
+                    <div class="window-control">□</div>
+                    <div class="window-control">×</div>
+                </div>
+            </div>
+            <div class="slack-channels">
+                #marketing-crisis • 12 members
+            </div>
+            <div class="window-content">
+                <div class="slack-messages" id="slackMessages">
+                    <div class="slack-message">
+                        <span class="slack-user">marcus.rodriguez</span>
+                        <span class="slack-time">2:48 PM</span>
+                        <div class="slack-text">OH NO OH NO OH NO. The GA4 integration is completely broken. I can't pull ANY reliable data.</div>
+                    </div>
+                    <div class="slack-message">
+                        <span class="slack-user">jenny.analytics</span>
+                        <span class="slack-time">2:49 PM</span>
+                        <div class="slack-text">@marcus.rodriguez what about the backup reports? Check the Q4_Analytics folder!</div>
+                    </div>
+                    <div class="slack-message">
+                        <span class="slack-user">alex.agency</span>
+                        <span class="slack-time">2:49 PM</span>
+                        <div class="slack-text">Team, I'm looking at our Facebook data and the attribution is completely off. iOS 14.5 broke everything worse than we thought.</div>
+                    </div>
+                    <div class="slack-message">
+                        <span class="slack-user">marcus.rodriguez</span>
+                        <span class="slack-time">2:50 PM</span>
+                        <div class="slack-text">@jenny.analytics WHERE is the Q4_Analytics folder?? I don't see it anywhere!</div>
+                    </div>
+                    <div class="slack-message">
+                        <span class="slack-user">jenny.analytics</span>
+                        <span class="slack-time">2:50 PM</span>
+                        <div class="slack-text">Try the shared drive > Marketing Reports > Q4_Emergency_Backup.xlsx</div>
+                    </div>
+                </div>
+                <input type="text" class="slack-input" placeholder="Message #marketing-crisis" id="slackInput">
+            </div>
+        </div>
+
+        <!-- File Explorer Window -->
+        <div class="window explorer-window" id="explorerWindow">
+            <div class="window-titlebar">
+                <div class="window-icon file-icon"></div>
+                <span>My Computer - Shared Drive</span>
+                <div class="window-controls">
+                    <div class="window-control">_</div>
+                    <div class="window-control">□</div>
+                    <div class="window-control">×</div>
+                </div>
+            </div>
+            <div class="window-menubar">
+                File Edit View Favorites Tools Help
+            </div>
+            <div class="explorer-toolbar">
+                <div class="explorer-address">Address: \\shared-drive\Marketing Reports\</div>
+            </div>
+            <div class="window-content">
+                <div class="explorer-content">
+                    <div class="explorer-tree">
+                        <div>📁 Shared Drive</div>
+                        <div>&nbsp;&nbsp;📁 Marketing Reports</div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;📁 Q1_2023</div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;📁 Q2_2023</div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;📁 Q3_2023</div>
+                        <div>&nbsp;&nbsp;&nbsp;&nbsp;📁 Q4_2023</div>
+                        <div>&nbsp;&nbsp;📁 Analytics_Backup</div>
+                        <div>&nbsp;&nbsp;📁 Campaign_Data</div>
+                    </div>
+                    <div class="explorer-files" id="explorerFiles">
+                        <div class="file-item">
+                            <div class="file-icon-small"></div>
+                            <span>Q3_Final_Report.xlsx</span>
+                        </div>
+                        <div class="file-item urgent">
+                            <div class="file-icon-small"></div>
+                            <span>Q4_Emergency_Backup.xlsx</span>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon-small"></div>
+                            <span>Attribution_Analysis_BROKEN.xlsx</span>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon-small"></div>
+                            <span>GA4_Migration_Issues.txt</span>
+                        </div>
+                        <div class="file-item urgent">
+                            <div class="file-icon-small"></div>
+                            <span>BOARD_PRESENTATION_DRAFT.pptx</span>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon-small"></div>
+                            <span>Facebook_Attribution_Fix.pdf</span>
+                        </div>
+                        <div class="file-item">
+                            <div class="file-icon-small"></div>
+                            <span>iOS14_Impact_Analysis.xlsx</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Taskbar -->
+        <div class="taskbar">
+            <div class="start-button">Start</div>
+            <div class="taskbar-clock" id="taskbarClock">3:17 PM</div>
+        </div>
+
+        <!-- Notification (will be dynamically created) -->
+    </div>
+
+    <script>
+        // Global scope functions for onclick handlers
+        function startScenario(scenarioId) {
+            // Hide scenario selection and show desktop
+            document.getElementById('scenarioScreen').style.display = 'none';
+            document.getElementById('desktop').style.display = 'block';
+            
+            // Initialize the desktop simulation
+            initSimulation();
+            
+            // Customize content based on selected scenario
+            loadScenarioContent(scenarioId);
+        }
+
+        function showScenarioSelection() {
+            document.getElementById('scenarioScreen').style.display = 'flex';
+            document.getElementById('desktop').style.display = 'none';
+        }
+
+        function goBackToScenarios() {
+            // Stop any running timers
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+            
+            // Reset timer
+            timeLeft = 60;
+            
+            // Show scenario selection
+            showScenarioSelection();
+        }
+
+        function loadScenarioContent(scenarioId) {
+            // Customize email content, file names, and personas based on scenario
+            const scenarios = {
+                'dashboard-doomsday': {
+                    emailSubject: 'URGENT: Board meeting in 30 mins - need numbers NOW',
+                    slackChannel: '#marketing-crisis',
+                    keyFile: 'Q4_Emergency_Backup.xlsx'
+                },
+                'typo-viral': {
+                    emailSubject: 'Social media crisis - viral post needs immediate attention',
+                    slackChannel: '#social-media-fire',
+                    keyFile: 'PR_Crisis_Response_Plan.docx'
+                },
+                'wrong-url': {
+                    emailSubject: 'Campaign sending traffic to COMPETITOR - fix NOW',
+                    slackChannel: '#campaign-emergency',
+                    keyFile: 'Campaign_URLs_CORRECTED.xlsx'
+                },
+                'budget-bomb': {
+                    emailSubject: 'BUDGET OVERSPEND ALERT - 300% over limit',
+                    slackChannel: '#budget-crisis',
+                    keyFile: 'Emergency_Budget_Analysis.xlsx'
+                },
+                'pixel-panic': {
+                    emailSubject: 'Attribution data unreliable - 2 weeks of bad tracking',
+                    slackChannel: '#tracking-disaster',
+                    keyFile: 'Facebook_Pixel_Backup_Data.xlsx'
+                }
+            };
+            
+            // This would update the email subjects, file names, etc. based on the selected scenario
+            // For now, using the default dashboard-doomsday content
+        }
+
+        // Window management
+        let activeWindow = null;
+        let dragData = { isDragging: false, window: null, offsetX: 0, offsetY: 0 };
+
+        // Crisis timer
+        let timeLeft = 60;
+        let timerInterval;
+
+        // Scenario state
+        let scenarioState = {
+            emailsRead: [],
+            filesOpened: [],
+            slackMessages: [],
+            userActions: []
+        };
+
+        // Initialize the simulation
+        function initSimulation() {
+            setupWindowDragging();
+            setupWindowInteractions();
+            startCrisisTimer();
+            simulateIncomingMessages();
+            updateClock();
+            
+            // Set up periodic crisis escalation
+            setInterval(escalateCrisis, 15000);
+            setInterval(checkScenarioProgress, 10000);
+            
+            // Add some initial interaction hints
+            setTimeout(() => {
+                showNotification("💡 Tip: Check your emails and look for the files mentioned in Slack!");
+            }, 3000);
+        }
+
+        // Window dragging functionality
+        function setupWindowDragging() {
+            document.querySelectorAll('.window-titlebar').forEach(titlebar => {
+                titlebar.addEventListener('mousedown', startDrag);
+            });
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function startDrag(e) {
+            const window = e.target.closest('.window');
+            const rect = window.getBoundingClientRect();
+            
+            dragData.isDragging = true;
+            dragData.window = window;
+            dragData.offsetX = e.clientX - rect.left;
+            dragData.offsetY = e.clientY - rect.top;
+            
+            window.classList.add('dragging');
+            setActiveWindow(window);
+        }
+
+        function drag(e) {
+            if (!dragData.isDragging) return;
+            
+            const window = dragData.window;
+            window.style.left = (e.clientX - dragData.offsetX) + 'px';
+            window.style.top = (e.clientY - dragData.offsetY) + 'px';
+        }
+
+        function stopDrag() {
+            if (dragData.window) {
+                dragData.window.classList.remove('dragging');
+            }
+            dragData.isDragging = false;
+            dragData.window = null;
+        }
+
+        function setActiveWindow(window) {
+            document.querySelectorAll('.window').forEach(w => {
+                w.classList.remove('active');
+                w.classList.add('inactive');
+            });
+            window.classList.add('active');
+            window.classList.remove('inactive');
+            activeWindow = window;
+        }
+
+        // Window interactions
+        function setupWindowInteractions() {
+            // Email interactions
+            document.querySelectorAll('.email-item').forEach(email => {
+                email.addEventListener('click', () => {
+                    document.querySelectorAll('.email-item').forEach(e => e.classList.remove('selected'));
+                    email.classList.add('selected');
+                    // In real implementation, this would load email content
+                    showNotification("Email opened - looking for data...");
+                });
+            });
+
+            // File explorer interactions
+            document.querySelectorAll('.file-item').forEach(file => {
+                file.addEventListener('dblclick', () => {
+                    const fileName = file.querySelector('span').textContent;
+                    openFile(fileName);
+                });
+            });
+
+            // Slack input
+            document.getElementById('slackInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendSlackMessage(e.target.value);
+                    e.target.value = '';
+                }
+            });
+
+            // Window focus events
+            document.querySelectorAll('.window').forEach(window => {
+                window.addEventListener('mousedown', () => setActiveWindow(window));
+            });
+        }
+
+        // Crisis timer
+        function startCrisisTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 15) {
+                    document.getElementById('crisisTimer').classList.add('warning');
+                }
+                
+                if (timeLeft <= 0) {
+                    gameOver();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const timer = document.getElementById('crisisTimer');
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timer.textContent = `🚨 You have ${minutes}:${seconds.toString().padStart(2, '0')} remaining until being laid off`;
+        }
+
+        function gameOver() {
+            clearInterval(timerInterval);
+            showNotification("TIME'S UP! The board meeting started without the data...", 'error');
+            // Trigger game over sequence
+        }
+
+        // Simulate incoming messages and updates
+        function simulateIncomingMessages() {
+            // Simulate new Slack messages
+            setTimeout(() => {
+                addSlackMessage('sarah.ceo', 'WHERE ARE THOSE NUMBERS?! Board is asking questions I can\'t answer!');
+                showNotification("New urgent message from CEO!");
+            }, 5000);
+
+            setTimeout(() => {
+                addSlackMessage('marcus.rodriguez', 'Found something in the backup folder! Check Q4_Emergency_Backup.xlsx');
+                highlightFile('Q4_Emergency_Backup.xlsx');
+            }, 15000);
+
+            setTimeout(() => {
+                addNewEmail('IT Support', 'GA4 connection restored - data may be delayed', false);
+                showNotification("New email from IT Support");
+            }, 25000);
+        }
+
+        function addSlackMessage(user, text) {
+            const messagesContainer = document.getElementById('slackMessages');
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'slack-message';
+            messageDiv.innerHTML = `
+                <span class="slack-user">${user}</span>
+                <span class="slack-time">${time}</span>
+                <div class="slack-text">${text}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Flash the Slack window to indicate new message
+            flashWindow('slackWindow');
+        }
+
+        function sendSlackMessage(text) {
+            if (!text.trim()) return;
+            
+            addSlackMessage('you', text);
+            scenarioState.userActions.push({type: 'slack_message', content: text, timestamp: Date.now()});
+            
+            // Trigger AI response based on message
+            setTimeout(() => {
+                respondToSlackMessage(text);
+            }, 2000 + Math.random() * 3000);
+        }
+
+        function respondToSlackMessage(userMessage) {
+            // Simple response logic - in real version this would call Claude API
+            const responses = {
+                'backup': 'marcus.rodriguez: Checking the backup files now!',
+                'board': 'sarah.ceo: Just told them we need 5 more minutes. FIND THE DATA!',
+                'data': 'jenny.analytics: Try looking in the Q4_Emergency_Backup.xlsx file',
+                'help': 'alex.agency: I can pull Facebook data directly if needed'
+            };
+            
+            const lowerMessage = userMessage.toLowerCase();
+            let response = 'marcus.rodriguez: Working on it...';
+            
+            for (let keyword in responses) {
+                if (lowerMessage.includes(keyword)) {
+                    response = responses[keyword];
+                    break;
+                }
+            }
+            
+            const [user, message] = response.split(': ');
+            addSlackMessage(user, message);
+        }
+
+        function addNewEmail(from, subject, isUrgent = false) {
+            const emailList = document.getElementById('emailList');
+            const emailDiv = document.createElement('div');
+            emailDiv.className = `email-item unread ${isUrgent ? 'urgent' : ''}`;
+            emailDiv.innerHTML = `
+                <div class="email-from">${from}</div>
+                <div class="email-subject">${subject}</div>
+            `;
+            
+            emailList.insertBefore(emailDiv, emailList.firstChild);
+            flashWindow('emailWindow');
+            
+            // Update inbox count
+            const titleSpan = document.querySelector('#emailWindow .window-titlebar span');
+            const currentCount = parseInt(titleSpan.textContent.match(/\((\d+) unread\)/)[1]);
+            titleSpan.textContent = `Outlook Express - Inbox (${currentCount + 1} unread)`;
+        }
+
+        function openFile(fileName) {
+            scenarioState.filesOpened.push(fileName);
+            
+            if (fileName.includes('Q4_Emergency_Backup')) {
+                showNotification("Q4 Emergency Backup opened! Found conversion data - but it's 3 days old...");
+                addSlackMessage('you', 'Found the backup data! It\'s from 3 days ago though...');
+            } else if (fileName.includes('BOARD_PRESENTATION')) {
+                showNotification("Board presentation opened - slides are missing key metrics!");
+                addSlackMessage('you', 'The presentation is incomplete - missing attribution data');
+            } else if (fileName.includes('Attribution_Analysis_BROKEN')) {
+                showNotification("File corrupted! Attribution analysis is unreadable.");
+            } else {
+                showNotification(`Opened ${fileName}`);
+            }
+        }
+
+        function highlightFile(fileName) {
+            document.querySelectorAll('.file-item').forEach(file => {
+                const fileNameSpan = file.querySelector('span');
+                if (fileNameSpan && fileNameSpan.textContent === fileName) {
+                    file.classList.add('urgent');
+                    flashWindow('explorerWindow');
+                }
+            });
+        }
+
+        function flashWindow(windowId) {
+            const window = document.getElementById(windowId);
+            window.style.border = '2px solid #ff0000';
+            setTimeout(() => {
+                window.style.border = '2px outset #c0c0c0';
+            }, 1000);
+        }
+
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            document.querySelectorAll('.notification').forEach(n => n.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            
+            if (type === 'error') {
+                notification.style.background = '#ffcccc';
+                notification.style.borderColor = '#ff6666';
+            }
+            
+            document.querySelector('.desktop').appendChild(notification);
+            
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('taskbarClock').textContent = timeString;
+            
+            setTimeout(updateClock, 1000);
+        }
+
+        // Cross-window interactions
+        function triggerCrossWindowEvent(eventType, data) {
+            switch(eventType) {
+                case 'email_mentions_file':
+                    highlightFile(data.fileName);
+                    showNotification(`${data.fileName} mentioned in email from ${data.sender}`);
+                    break;
+                    
+                case 'slack_references_email':
+                    // Highlight relevant email
+                    document.querySelectorAll('.email-item').forEach(email => {
+                        if (email.textContent.toLowerCase().includes(data.keyword.toLowerCase())) {
+                            email.style.background = '#fffacd';
+                        }
+                    });
+                    break;
+                    
+                case 'file_opened_triggers_slack':
+                    setTimeout(() => {
+                        addSlackMessage('marcus.rodriguez', `I see you opened ${data.fileName}. ${data.message}`);
+                    }, 1000);
+                    break;
+            }
+        }
+
+        // Advanced crisis simulation
+        function escalateCrisis() {
+            if (timeLeft <= 45) {
+                addSlackMessage('sarah.ceo', 'Board members are getting impatient. They want to see SOMETHING in the next 10 minutes.');
+                addNewEmail('Board Assistant', 'Meeting agenda updated - Marketing metrics moved to first item', true);
+            }
+            
+            if (timeLeft <= 30) {
+                addSlackMessage('marcus.rodriguez', 'The attribution data is completely unreliable. iOS 14.5 broke more than we thought.');
+                showNotification("Crisis escalating - multiple data sources failing!");
+            }
+            
+            if (timeLeft <= 15) {
+                addSlackMessage('sarah.ceo', 'I\'m walking into the boardroom now. Text me whatever numbers you have!');
+                addNewEmail('CFO Mike Rodriguez', 'Need revenue impact analysis ASAP - board asking direct questions', true);
+            }
+        }
+
+        // Scenario branching based on user actions
+        function checkScenarioProgress() {
+            const filesOpened = scenarioState.filesOpened.length;
+            const slackMessages = scenarioState.slackMessages.length;
+            
+            if (filesOpened >= 2 && slackMessages >= 3) {
+                // User is actively working - provide a lifeline
+                addSlackMessage('jenny.analytics', 'Wait! I found a working dashboard backup. Check your email!');
+                addNewEmail('Jenny Analytics', 'BACKUP DASHBOARD LINK - Use this for board meeting', false);
+            }
+            
+            if (timeLeft <= 20 && filesOpened === 0) {
+                // User hasn't opened any files - nudge them
+                addSlackMessage('marcus.rodriguez', 'DID YOU CHECK THE FILES?? The backup data might be in Q4_Emergency_Backup.xlsx!');
+                highlightFile('Q4_Emergency_Backup.xlsx');
+            }
+        }
+
+        // Sound effects (placeholder - would use actual audio in production)
+        function playSound(soundType) {
+            // Email notification, Slack ping, urgent alert, etc.
+            console.log(`Playing sound: ${soundType}`);
+        }
+
+        // Initialize simulation when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initSimulation();
+            
+            // Set up periodic crisis escalation
+            setInterval(escalateCrisis, 15000);
+            setInterval(checkScenarioProgress, 10000);
+            
+            // Add some initial interaction hints
+            setTimeout(() => {
+                showNotification("💡 Tip: Check your emails and look for the files mentioned in Slack!");
+            }, 3000);
+        });
+
+        // Keyboard shortcuts for enhanced realism
+        document.addEventListener('keydown', (e) => {
+            // Alt+Tab to switch windows (simplified)
+            if (e.altKey && e.key === 'Tab') {
+                e.preventDefault();
+                const windows = document.querySelectorAll('.window');
+                const currentIndex = Array.from(windows).indexOf(activeWindow);
+                const nextIndex = (currentIndex + 1) % windows.length;
+                setActiveWindow(windows[nextIndex]);
+            }
+            
+            // Escape to show all windows
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.window').forEach(window => {
+                    window.style.transform = 'scale(0.8)';
+                    setTimeout(() => {
+                        window.style.transform = 'scale(1)';
+                    }, 200);
+                });
+            }
+        });
+
+        // Window minimize/maximize functionality
+        document.querySelectorAll('.window-control').forEach(control => {
+            control.addEventListener('click', (e) => {
+                const window = e.target.closest('.window');
+                const controlText = e.target.textContent;
+                
+                switch(controlText) {
+                    case '_': // Minimize
+                        window.style.transform = 'scale(0.1)';
+                        window.style.opacity = '0';
+                        setTimeout(() => {
+                            window.style.display = 'none';
+                        }, 300);
+                        break;
+                        
+                    case '□': // Maximize/Restore
+                        if (window.style.width === '100vw') {
+                            // Restore
+                            window.style.width = '';
+                            window.style.height = '';
+                            window.style.top = '';
+                            window.style.left = '';
+                        } else {
+                            // Maximize
+                            window.style.width = '100vw';
+                            window.style.height = 'calc(100vh - 40px)';
+                            window.style.top = '0';
+                            window.style.left = '0';
+                        }
+                        break;
+                        
+                    case '×': // Close
+                        window.style.opacity = '0';
+                        setTimeout(() => {
+                            window.style.display = 'none';
+                        }, 300);
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
